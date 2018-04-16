@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block content %}
+	<h3>{{ user.firstname }} {{ user.lastname }}</h3>
+	{% if admin %}
+	<a class="btn btn-mini btn-info" href="/users/edit/{{ user.key.id() }}">Editieren</a>
+	{% if overdone|length > 0 %}
+	<a class="btn btn-mini btn-info" href="mailto:{{user.nickname}}%40hyperwerk.ch?subject=Überzogene%20Reservationen&body=Ahoi%20{{user.firstname}}%20{{user.lastname}}%0D%0A%0D%0AFolgende%20Waren%20sind%20laut%20Datenbank%20auf%20deinen%20Namen%20ausgeliehen%2C%20%C3%BCberf%C3%A4llig%20und%20sollte%20zur%C3%BCck%20ins%20Lager%20oder%20gegebenenfalls%20verl%C3%A4ngert%20werden%3A%0D%0A%0D%0A
+		{% for reservation in overdone %}
+		Itemname%3A%20{{reservation.item.get().title}}%0D%0A
+		InvNr%3A%20{% set inv = reservation.item.get().inventory_number ~ '' %}{{ inv.zfill(4) }}%0D%0A
+		von%3A%20{{reservation.between.strftime('%d.%m.%Y')}}%20
+		bis%20{{reservation.until.strftime('%d.%m.%Y')}}%0D%0A%0D%0A
+		{% endfor %}
+		Mit%20freundlichen%20Gr%C3%BCssen%0D%0ADas%20Verleihsystem"><i class="icon-envelope icon-white"></i> mit allen Überzogenen</a>
+	{% endif %}
+	{% endif %}
+	{% if reservations|length > 0 %}
+		<h3>Reservationen</h3>
+		{{ r( reservations, false, session.admin, [ 1, 2 ] ) }}
+	{% endif %}
+{% endblock %}

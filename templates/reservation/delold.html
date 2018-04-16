@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block head %}
+	{{ super() }}
+	    <link rel="stylesheet" href="/static/css/vendor/bootstrap/jquery-ui-1.8.16.custom.css">
+{% endblock %}
+
+{% block content %}
+  <form class="form-inline" method="get" action="/reservation/old/">
+    <span>Älter als</span>
+    <input type="text" name="days" class="input-small" value="{{ days }}">
+    <span>Tage</span>
+    <button type="submit" class="btn">anzeigen.</button>
+  </form>
+	{% if reservations %}
+	<h3>{{ reservations|length }} Resultat{% if reservations|length > 1 %}e{% endif %}</h3>
+	{{ r( reservations, false, session.admin ) }}
+	<a class="btn btn-danger" href="/reservation/delete-old/{{ days }}">Wirklich alle alten Reservationen löschen?</a> 
+	{% else %}
+	<h3>Keine alten Reservationen vorhanden.</h3>
+	{% endif %}
+{% endblock %}

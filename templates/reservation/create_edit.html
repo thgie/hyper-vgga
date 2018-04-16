@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block head %}
+	{{ super() }}
+	<link rel="stylesheet" href="/static/css/vendor/bootstrap/jquery-ui-1.8.16.custom.css">
+	<style>
+
+		.occupied a.ui-state-default,
+		.occupied span.ui-state-default {
+			background: red;
+			color: white;
+		}
+
+	</style>
+{% endblock %}
+
+{% block content %}
+	
+	<h3>{% if not reservation %}{{ item.title }}{% else %}{{ reservation.item.get().title }}{% endif %}</h3>
+
+
+	
+	<form id="reservation" method="post"
+		action="/reservation/{% if not reservation %}create/{{ item.key.integer_id() }}{% else %}edit/{{ reservation.key.integer_id() }}{% endif %}">
+	
+		<p>
+			<label for="between">Zeitraum</label>
+			<input class="check date_between" type="text" name="between" placeholder="Ab: dd.mm.jjjj" {% if reservation %}value="{{ reservation.between.strftime('%d.%m.%Y') }}"{% endif %}/>
+			<input class="check date_until" type="text" name="until" placeholder="Bis und mit: dd.mm.jjjj" {% if reservation %}value="{{ reservation.until.strftime('%d.%m.%Y')}}"{% endif %}/>
+		</p>
+	
+		{% if session.admin %}
+		<p>
+			<label for="user_id">Benutzer</label>
+			<select name="nickname">
+				<option value="{{ myself.nickname }}">Auf eigenen Namen</option>
+				{% for user in users|sort(attribute='nickname') %}
+					{% if not reservation %}
+					<option value="{{ user.nickname }}">{{ user.firstname }} {{ user.lastname }}</option>
+					{% else %}
+					<option value="{{ user.nickname }}" {% if reservation.user.get().nickname == user.nickname %}selected{% endif %}>{{ user.firstname }} {{ user.lastname }}</option>
+					{% endif %}
+				{% endfor %}
+			</select>
+		</p>
+		{% else %}
+		<input type="hidden" name="nickname" value="{{ myself.nickname }}">
+		{% endif %}
+		<p>
+			<label for="why">Begründung</label>
+			<textarea class="second_check" name="why">{% if reservation %}{{ reservation.why }}{% endif %}</textarea>
+		</p>
+		<p class="submit">
+			{% if reservation %}
+				<input class="btn" type="submit" value="Änderung sichern">
+				{% if session.admin %}
+				{% if ( reservation.state == 0 ) %}
+				<a class="btn btn-info" href="/reservation/setstate/{{ reservation.key.integer_id() }}?state=1">Bestätigen</a>
+				{% elif ( reservation.state == 1 ) %}
+				<a class="btn btn-info" href="/reservation/setstate/{{ reservation.key.integer_id() }}?state=2">Aktivieren</a>
+				{% else %}
+				<a class="btn btn-info" href="/reservation/setstate/{{ reservation.key.integer_id() }}?state=1">Deaktivieren</a>
+				{% endif %}
+				<a class="btn btn-danger" href="/reservation/delete/{{ reservation.key.integer_id() }}">Löschen</a>
+				{% endif %}
+				{% else %}
+				<input class="btn" type="submit" value="Reservieren">
+			{% endif %}
+			</p>
+	</form>
+	{% if reservations %}
+		<h2>Reservationen</h2>
+		{{ r( reservations, false, session.admin, [ 1, 2 ] ) }}
+	{% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script src="/static/js/vendor/jquery-ui-1.8.22.custom.min.js"></script>
+    <script src="/static/js/vendor/jquery.ui.datepicker-de.js"></script>
+    <script src="/static/js/reservation-validate-min.js"></script>
+
+    <script type="text/javascript">
+
+    		var admin = {% if session.admin %}true{% else %}false{% endif %};
+
+		var unavailableDates = [];
+		var startDate = undefined;
+		var endDate = undefined;
+		var skipDate = undefined;
+		var check = true;
+
+		{% if dates %}
+		    	{% for date in dates %}
+				unavailableDates.push("{{ date.strftime('%d-%m-%Y') }}");				
+		    	{% endfor %}
+		{% endif %}
+
+		$( ".date_between" ).datepicker({ firstDay: 1, beforeShowDay: _beforeShowDayBetween, onSelect:  _onSelect }, $.datepicker.regional[ "de" ]);
+		$( ".date_until" ).datepicker({ firstDay: 1, beforeShowDay: _beforeShowDayUntil, onSelect:  _onSelect }, $.datepicker.regional[ "de" ]);
+
+		function _beforeShowDayBetween(date){
+			return _beforeShowDay(date, 'between');
+		}
+
+		function _beforeShowDayUntil(date){
+			return _beforeShowDay(date, 'until');
+		}
+
+		function _beforeShowDay(date, picker) {
+			dmy = ('0' + date.getDate()).slice(-2) + "-" + ('0' + (date.getMonth()+1)).slice(-2) + "-" + date.getFullYear();
+
+			// get the next date that's bigger then the startdate and is occupied. to avoid crossings skip all dates after that date.
+			if(check && startDate && skipDate == undefined){
+				if($.inArray(dmy, unavailableDates) > 0 && date.getTime() > startDate.getTime()){
+					skipDate = new Date(date);
+					check = false;
+				}
+			}
+
+			// here we skip the date
+			if(skipDate){
+				if(date.getTime() > skipDate.getTime()){
+					return [false];
+				}
+			}
+
+			// skip all dates that are smaller then the startdate
+			if(startDate && picker == 'until'){
+				if(date.getTime() < startDate.getTime()){
+					return [false];
+				}
+			}
+
+			// skip all dates that are bigger then the enddate
+			if(endDate && picker == 'between'){
+				if(date.getTime() > endDate.getTime()){
+					return [false];
+				}
+			}
+
+			// skip all allready occupied dates
+			if ($.inArray(dmy, unavailableDates) < 0) {
+				return [true];
+			} else {
+				if(admin){
+					return [true, 'occupied'];
+				} else {
+					return [false, 'occupied'];
+				}
+			}
+		}
+
+		function _onSelect(dateText, inst) {
+			switch(inst.input[0].name){
+				case 'between':
+					startDate = new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay);
+					$( ".date_until" ).datepicker('refresh');
+					break;
+				case 'until':
+					endDate = new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay);
+					$( ".date_between" ).datepicker('refresh');
+					break;
+			}
+		}
+
+    </script>
+{% endblock %}

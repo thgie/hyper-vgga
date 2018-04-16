@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<form id="hardware_form" method="post" class="form" 
+		action="/hardware/{% if hw and not copy %}edit/{{ hw.key.integer_id() }}{% else %}create/{% endif %}">
+		<h4>Essentials</h4>
+		<div class="row-fluid">
+			<div class="span3">
+				<label>Name</label>
+				<input class="check span12" name="title" type="text" value="{{ hw.title }}" required/>
+			</div>
+			<div class="span3">
+				<label>Inventar Nummer</label>
+				<input class="inventory_number check" name="inventory_number" type="number" placeholder="0000" required 
+				{% if hw %}value="{% set inv = hw.inventory_number ~ '' %}{{ inv.zfill(4) }}"{% endif %}/>
+			</div>
+		</div>
+		<div class="row-fluid">
+		{% for label in labels %}
+		{% if label.category != 'Stichwort' %}
+			<div class="span3">
+				<label><abbr class="tip" title="Einfache Auswahl" data-placement="right">{{ label.category }}</abbr></label>
+				<select name="{% if label.category == 'Kategorie' %}category{% else %}location{% endif %}">
+					<option>-</option>
+					{% for tag in label.tags %}
+					<option value="{{tag}}" {% if label.category == 'Kategorie' %}{% if tag == category %}selected{% endif %}{% else %}{% if tag == location %}selected{% endif %}{% endif %}>{{tag}}</option>
+					{% endfor %}
+				</select>
+			</div>
+		{% endif %}
+		{% endfor %}
+		</div>
+
+		<label class="checkbox">
+			<input type="checkbox" name="invisible" {% if hw.invisible %}checked{% endif %} class="checkbox"> Unsichtbar
+		</label>
+		<h4>Stichworte</h4>
+		<div class="row-fluid">
+		{% for label in labels %}
+		{% if label.category == 'Stichwort' %}
+			<div class="span3">
+				<label><abbr class="tip" title="Mehrfach Auswahl möglich" data-placement="right">{{ label.category }}</abbr></label>
+				<select class="tags">
+					<option>-</option>
+					{% for tag in label.tags %}
+					<option value="{{tag}}">{{tag}}</option>
+					{% endfor %}
+				</select>
+			</div>
+		{% endif %}
+		{% endfor %}
+			<div class="span3">
+				<label for="">Ausgewählte Stichworte</label>
+				<p id="tag_wrapper"></p>
+			</div>
+		</div>
+		<h4>Zusätzliche Informationen</h4>
+		<div class="row-fluid">
+			<div class="span3">
+				<label>Beschreibung</label>
+				<textarea rows="3" name="description">{{ hw.description }}</textarea>
+			</div>
+			<div class="span3">
+				<label>Zubehör</label>
+				<textarea rows="3" name="accessories">{{ hw.accessories }}</textarea>
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span3">
+				<label>Serien Nummer</label>
+				<input name="serial_number" type="text" value="{{ hw.serial_number }}"/>
+			</div>
+			<div class="span3">
+				<label>Jahr</label>
+				<input name="year" type="text" value="{% if hw %}{{ hw.year }}{% else %}2012{% endif %}" placeholder="2012"/>	
+			</div>
+			<div class="span3">
+				<label>Kosten</label>
+				<input name="costs" type="text" value="{{ hw.costs }}"/>
+			</div>
+		</div>
+		<input class="btn submit" type="submit" value="Speichern">
+
+	</form>
+	{% endblock %}
+
+	{% block javascript %}
+		<script type="text/javascript">
+			var edit = {% if edit and not copy %}true{% else %}false{% endif %};
+			var copy = {% if copy %}true{% else %}false{% endif %};
+			var labels = [{% for label in hw.labels %}{% if label in stichworte.tags %}'{{label}}',{% endif %}{% endfor %}];
+			$('.tip').tooltip();
+		</script>
+		<script src="/static/js/hardware/create_edit.js"></script>
+	{% endblock %}

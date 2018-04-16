@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% if bookmarks %}
+	<h3>{{ bookmarks|length }} Bookmark{% if found|length > 1 %}s{% endif %}</h3>
+	<table class="table">
+		<tr>
+			<th>Inventar Nummer</th>
+			<th>Item</th>
+			<th>Beschreibung</th>
+			<th>Labels</th>
+            <th>Entfernen</th>
+		</tr>
+	    {% for hw in bookmarks %}
+	    <tr>
+	        <td class="row-{{loop.index % 2}}"><a href="/hardware/view/{{ hw.key.integer_id() }}">{% set inv = hw.inventory_number ~ '' %}{{ inv.zfill(4) }}</a></td>
+	        <td class="row-{{loop.index % 2}}"><a href="/hardware/view/{{ hw.key.integer_id() }}">{{ hw.title }}</a></td>
+            <td class="row-{{loop.index % 2}}"><p style="width: 400px;">{{ hw.description }}</span></td>
+            <td class="row-{{loop.index % 2}}">
+			{% for label in hw.labels %}
+                <span class="btn btn-mini btn-info">{{ label }}</span>
+			{% endfor %}
+            </td>
+            <td><a class="btn btn-mini btn-info" href="/bookmarks/delete/{{ hw.key.integer_id() }}">Entfernen</a></td>
+		</tr>
+	    {% endfor %}
+	</table>
+	{% else %}
+	<h3>Keine Bookmarks</h3>
+	{% endif %}
+{% endblock %}

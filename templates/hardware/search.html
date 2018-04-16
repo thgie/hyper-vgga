@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<a id="toggle_options" href="#"><h3>Search Options <i class="icon-plus-sign"></i></h3></a>
+	<div id="search_options">
+		<p class="lead" style="float: left;">Die Suche nach Titel sollte nur im Notfall benutzt werden. </p>
+		<p style="float: left;">&nbsp;<small><abbr class="top" title="Warum?" data-html="true" data-placement="bottom" data-trigger="hover" data-content="Das neue Verleihsystem ist direkt an Take5 angeschlossen und läuft auf Server von Google. Die Datenbank die uns zur Verfügung gestellt wird und benutzt werden muss besitzt kein LIKE Statement in seiner Query Sprache. Das führt dazu, dass bei einer Suche nach Text zuerst alle Hardwaresätze aus der Datenbank geholt werden müssen. Um dann anschliessend mit Pythonfunktionen Textoperationen durchzuführen, um zu sehen ob der Suchtext in der Hardware vorkommt. Wir haben mit unserem Konto 50'000 Leseoperationen pro 24h zur Verfügung. Wenn diese erreicht sind, stellt die Seite für die restliche Zeit des Tages ab. Eine Suche mit Text verbraucht gut 1500 davon. Den Rest könnt ihr euch selber ausrechnen."><i class="icon-question-sign"></i></abbr></small></p>
+		<form style="clear: left;" id="hardware_search" action="/hardware/search/" method="post">
+			{% if session.admin %}
+			<h4>Admin Options</h4>
+			<div class="row-fluid">
+				<div class="span3">
+					<label>Inventarnummer</label>
+					<input type="text" id="search" class="inventory_number" name="inventory_number" placeholder="-" value="{{ inventory_number }}">
+				</div>
+				<div class="span3">
+					<label>Titel</label>
+					<input type="text" id="search" name="search_string" placeholder="-" value="{{ search_string }}">
+				</div>
+				<div class="span3">
+					<label>Seriennummer</label>
+					<input type="text" id="search" name="serial" placeholder="-" value="{{ serial }}">
+				</div>
+			</div>
+			<div class="row-fluid">
+				<div class="span3">
+				{% for label in labels %}
+				{% if label.category == 'Standort' %}
+					<label><abbr class="tip" title="Einfache Auswahl" data-placement="right">{{ label.category }}</abbr></label>
+					<select name="location" class="location">
+						<option>-</option>
+						{% for tag in label.tags|sort %}
+						<option value="{{tag}}" {% if tag == search_location %}selected{% endif %}>{{tag}}</option>
+						{% endfor %}
+					</select>
+				{% endif %}
+				{% endfor %}
+				</div>
+				<div class="span3">
+					<label for="">&nbsp;</label>
+					<label class="checkbox">
+						<input type="checkbox" name="invisible" class="checkbox"> Nur unsichtbare
+					</label>
+				</div>
+				<div class="span3"></div>
+			</div>
+			{% endif %}
+			<h4>Search Options</h4>
+			<div class="row-fluid">
+			{% for label in labels %}
+			{% if label.category == 'Kategorie' %}
+				<div class="span3">
+					<label><abbr class="tip" title="Einfache Auswahl" data-placement="right">{{ label.category }}</abbr></label>
+					<select name="category" class="category">
+						<option>-</option>
+						{% for tag in label.tags|sort %}
+						<option value="{{tag}}" {% if tag == search_category %}selected{% endif %}>{{tag}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			{% endif %}
+			{% if label.category == 'Stichwort' %}
+				<div class="span3">
+					<label><abbr class="tip" title="Mehrfach Auswahl möglich" data-placement="right">{{ label.category }}</abbr></label>
+					<select class="tags">
+						<option>-</option>
+						{% for tag in label.tags|sort %}
+						<option value="{{tag}}">{{tag}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			{% endif %}
+			{% endfor %}
+				<div class="span3" id="tag_wrapper">
+					<label for="">Ausgewählte Stichworte</label>
+					<p id="tag_wrapper"></p>
+				</div>
+			</div>
+			{% if not session.admin %}
+			<h4>Advanced Options</h4>
+			<div class="row-fluid">
+				<div class="span3">
+					<label>Inventarnummer</label>
+					<input type="text" id="search" class="inventory_number" name="inventory_number" placeholder="-" value="{{ inventory_number }}">
+				</div>
+				<!--<div class="span3">
+					<label>Titel</label>
+					<input type="text" id="search" name="search_string" placeholder="-" value="{{ search_string }}">
+				</div>-->
+			</div>
+			{% endif %}
+			<input class="btn search" type="submit" value="Suchen" disabled>
+		</form>
+	</div>
+
+	{% if found %}
+	<h3>{{ found|length }} Resultat{% if found|length > 1 %}e{% endif %}</h3>
+	<table class="table">
+		<tr>
+			<th>Inventar Nummer</th>
+			<th>Item</th>
+			<th>Beschreibung</th>
+			<th>Labels</th>
+		</tr>
+	    {% for hw in found %}
+	    {% if session.admin or not hw.invisible %}
+	    <tr class="{% if hw.reservations|chckhwstt == 1 %}info{% elif hw.reservations|chckhwstt == 2 %}error{% endif %}">
+	        <td class="row-{{loop.index % 2}}"><a href="/hardware/view/{{ hw.key.integer_id() }}">{% set inv = hw.inventory_number ~ '' %}{{ inv.zfill(4) }}</a></td>
+	        <td class="row-{{loop.index % 2}}"><a href="/hardware/view/{{ hw.key.integer_id() }}">{{ hw.title }}</a></td>
+		<td class="row-{{loop.index % 2}}"><p style="width: 400px;">{{ hw.description }}</span></td>
+		<td class="row-{{loop.index % 2}}">
+			{% for label in hw.labels %}
+			<span class="btn btn-mini btn-info">{{ label }}</span>
+			{% endfor %}
+		</td>
+		</tr>
+		{% endif %}
+	    {% endfor %}
+	</table>
+	{% else %}
+	<h3>Keine Suchresultate</h3>
+	{% endif %}
+{% endblock %}
+
+{% block javascript %}
+
+	<script>
+		$(function(){
+			var labels = [{% for tag in search_labels %}'{{tag}}',{% endfor %}];
+			$('.tip').tooltip();
+			$('.top').popover();
+			if({{ hide_options }}){
+				$('#search_options').hide(500);
+			}
+			$('#toggle_options').click(function(e){
+				e.preventDefault();
+				$('#search_options').toggle();
+			});
+
+			$('.tags').change(function(){
+				console.log('tags');
+				$('.btn.search').prop('disabled', false);
+			})
+
+			$('.category').change(function(){
+				console.log('category');
+				$('.btn.search').prop('disabled', false);
+			})
+
+			$('.location').change(function(){
+				console.log('category');
+				$('.btn.search').prop('disabled', false);
+			})
+
+			$('.inventory_number').keyup(function(){
+				console.log('inventory_number');
+				$('.btn.search').prop('disabled', false);
+			})
+
+			$('.btn.search').click(function(e){
+				e.preventDefault();
+
+				if($('.category').val() !== '-' || $('.location').val() !== '-' || $('#tag_wrapper a').length > 0 || $('.inventory_number').val().length > 0){
+					$('#hardware_search').submit();
+				} else {
+					alert('Bitte Formular ausfüllen. Wonach soll ich den sonst suchen?')
+				}
+			});
+		});
+	</script>
+	<script src="/static/js/hardware/search.js"></script>
+
+{% endblock %}	

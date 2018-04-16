@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+
+	<!----------------------------------------------------------
+
+                ___           ___           ___           ___     
+               /\__\         /\  \         /\  \         /\  \    
+              /:/  /        /::\  \       /::\  \       /::\  \   
+             /:/  /        /:/\:\  \     /:/\:\  \     /:/\:\  \  
+            /:/__/  ___   /:/  \:\  \   /:/  \:\  \   /::\~\:\  \ 
+            |:|  | /\__\ /:/__/_\:\__\ /:/__/_\:\__\ /:/\:\ \:\__\
+            |:|  |/:/  / \:\  /\ \/__/ \:\  /\ \/__/ \/__\:\/:/  /
+            |:|__/:/  /   \:\ \:\__\    \:\ \:\__\        \::/  / 
+             \::::/__/     \:\/:/  /     \:\/:/  /        /:/  /  
+              ~~~~          \::/  /       \::/  /        /:/  /   
+                             \/__/         \/__/         \/__/    
+
+            Verleih goes Google Apps, 1.0 released 16.01.2013.
+
+            A Project by
+                - Rasso Auberger, ra
+                - Martin Sommer, ms
+                - Thomas Bruhin, tb
+                - Adrian Demleitner, ad
+
+            Concepting: ra, ms, ad
+            Testing: ra, ms, tb, ad
+            Execution and Coding: ad
+
+            The world did not end in 2012.
+
+            Erroll Garner - Lullaby of Birdland:
+            http://www.youtube.com/watch?v=3TUq6EvAxsM
+
+
+	---------------------------------------------------------->
+
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-38065716-1']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
+
+	<meta charset="UTF-8">
+	{% block head %}
+	<title>Hardwareverleih HyperWerk: {{ title }}</title>
+
+	<link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="/static/css/bootstrap-responsive.min.css" />
+	{% endblock %}
+</head>
+<body style="background: #efefef;">
+	<div class="container-fluid" style="background: black; padding-bottom: 10px;">
+		<div class="row-fluid">
+			<div class="span11">
+				<h4 style="color: white;">Hardwareverleih HyperWerk: {{ title }}</h4>
+			</div>
+			<div class="span1">
+				<a style="margin-top: 8px;" class="btn btn-danger" href="{{ session.url }}">{{ session.logger }}</a>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid" style="padding-bottom: 50px; background: white;">	
+		<div class="row-fluid">
+			<h1>{{ title }}</h1>
+
+			{% if session.logged %}
+			<ul class="nav nav-pills">
+				<li {% if nav_dashboard %}class="active"{% endif %}><a href="/dashboard">Dashboard</a></li>
+				<li {% if nav_hardware %}class="active"{% endif %}><a href="/hardware/search/">Hardware</a></li>
+				<li {% if nav_bookmarks %}class="active"{% endif %}><a href="/bookmarks/view/">Bookmarks</a></li>
+				{% if session.admin %}
+				<li class="dropdown {% if nav_admin %}active{% endif %}">
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#">Admin<b class="caret"></b> </a>
+					<ul class="dropdown-menu">
+						<li><a href="/hardware/create/"><i class="icon-plus-sign"></i> Hardware hinzufügen</a></li>
+						<li><a href="/reservation/search/"><i class="icon-search"></i> Reservationen suchen</a></li>
+						<li><a href="/users/create/"><i class="icon-user"></i> Benutzer hinzufügen</a></li>
+						<li><a href="/users/all/"><i class="icon-user"></i> Benutzer suchen</a></li>
+						<li><a href="/labels/all/"><i class="icon-pencil"></i> Labels editieren</a></li>
+            <li class="divider"></li>
+            <li><a href="/reservation/old/"><i class="icon-remove"></i> Alte Reservationen entfernen</a></li>
+            <li><a href="/numbers/1/1000"><i class="icon-question-sign"></i> Freie Inventarnummern</a></li>
+					</ul>
+				</li>
+				{% endif %}
+			</ul>
+			{% endif %}
+			{% block content %}{% endblock %}
+		</div>
+	</div>
+	<div class="container-fluid" style="background: #efefef;">
+		<div class="row-fluid">
+			<div class="span12">
+				<p style="color: #181818; margin-top: 5px;"><a href="mailto:adrian.demleitner@hyperwerk.ch?subject=You%20are%20awesome!" style="color: #181818;"><small>Made by some HyperWorkers &copy 2012</small></a></p>
+			</div>
+		</div>
+	</div>
+
+	<script src="/static/js/vendor/jquery-1.8.2.min.js"></script>
+	<script src="/static/js/vendor/bootstrap.min.js"></script>
+	<script type="text/javascript">$('.dropdown-toggle').dropdown();</script>
+	{% block javascript %} {% endblock %}
+
+</body>
+</html>

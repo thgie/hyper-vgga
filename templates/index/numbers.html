@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h3>Freie Inventarnummern</h3>
+	{% for n in nonexisting %}
+		<span>{% set inv = n ~ '' %}{{ inv.zfill(4) }}</span> 
+	{% endfor %}
+	<h3>Besetzte Inventarnummern</h3>
+	{% for e in existing %}
+		<span>{% set inv = e ~ '' %}{{ inv.zfill(4) }}</span> 
+	{% endfor %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block content %}
+	<h3>{{ hw.title }}</h3>
+	
+	<table class="table table-hover">
+		<tr>
+			<td class="span3"><small><strong>Inventar Nummer</strong></small></td>
+			<td>{% set inv = hw.inventory_number ~ '' %}{{ inv.zfill(4) }}</td>
+		</tr>
+		<tr>
+			<td><small><strong>Beschreibung</strong></small></td>
+			<td><p class="span6">{{ hw.description }}</p></td>
+		</tr>
+		<tr>
+			<td><small><strong>Zubehör</strong></small></td>
+			<td>{{ hw.accessories }}</td>
+		</tr>
+		<tr>
+			<td><small><strong>Labels</strong></small></td>
+			<td>
+				{% for label in hw.labels %}
+				<span class="btn btn-mini btn-link">{{ label }}</span>
+				{% endfor %}
+			</td>
+		</tr>
+	</table>
+
+	<a class="btn btn-mini btn-info" href="/reservation/create/{{ hw.key.id() }}">Reservieren</a>
+	<a class="btn btn-mini btn-info" href="/bookmarks/add/{{ hw.key.id() }}">Bookmark</a>
+	{% if session.admin %}
+	<a class="btn btn-mini btn-info" href="/hardware/edit/{{ hw.key.id() }}">Editieren</a> 
+	<a class="btn btn-mini btn-danger" href="/hardware/delete/{{ hw.key.id() }}">Löschen</a> 
+	<a class="btn btn-mini btn-inverse" href="/hardware/copy/{{ hw.key.id() }}">Kopieren</a> 
+	{% endif %}
+	{% if reservations %}
+	<h3>Reservationen</h3>
+	{{ r( reservations, false, session.admin, [ 1, 2 ] ) }}
+	{% endif %}
+{% endblock %}

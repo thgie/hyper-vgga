@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block content %}
+	{% if reservations %}
+	<h3>Achtung.</h3>
+	<p>Es bestehen Reservationen zu dieser Hardware. Solange diese bestehen kann die Hardware nicht gelöscht werden.</p>
+		{{ r( reservations, false, session.admin, [ 0, 1, 2, 3 ], true ) }}
+	{% else %}
+	<h3>Hardware wirklich löschen?</h3>
+	<form action="/hardware/delete/{{ hw.key.integer_id() }}" method="post">
+		<input class="btn btn-danger" type="submit" value="Löschen">
+	</form>
+	{% endif %}
+{% endblock %}

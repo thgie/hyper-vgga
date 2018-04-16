@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h3>Als Liste</h3>
+	<select onChange="location.href=this.value">
+		<option value="">-</option>
+	{% for user in users|sort(attribute='nickname') %}
+		{% set id = user.key.integer_id() %}
+		<option value="/users/view/{{ id }}">{{ user.firstname }} {{ user.lastname }}</option>
+	{% endfor %}
+	</select>
+	<h3>Als Tagcloud</h3>
+	{% for user in users|sort(attribute='nickname') %}
+	{% set id = user.key.integer_id() %}
+	<a style="margin-bottom: 5px;" class="btn btn-mini btn-inverse" href="/users/view/{{ id }}">{{ user.firstname }} {{ user.lastname }}</a>
+	{% endfor %}
+{% endblock %}

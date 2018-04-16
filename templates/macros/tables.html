@@ -1,0 +1,54 @@
+{% macro reservations( reservations, confirm = false, admin = false, states = [0, 1, 2, 3], delete = false, showitem = true ) -%}
+<table class="table table-striped table-hover">
+	<tr>
+		{% if admin %}<!--<th>Zustand</th>-->{% endif %}
+		{% if showitem %}<th>#</th><th>Item</th>{% endif %}
+		<th>User</th>
+		<th>Zeitraum</th>
+		<th>Begründung</th>
+		<th>{% if admin %}Optionen{% endif %}</th>
+	</tr>
+	{% for reservation in reservations|sort(attribute='between') %}
+		{% if ( reservation.state in states ) %}
+		{% set item = reservation.item.get() %}
+		{% set user = reservation.user.get() %}
+		<tr class="{% if reservation.state == 2 and not reservation.until|overdue %}info{% elif reservation.state == 2 and reservation.until|overdue %}error{% endif %}">
+			{% if admin %}
+			<!-- <td class="row-{{loop.index % 2}}"><span class="block state{{ reservation.state }}"></span></td> -->
+		{% endif %}
+			{% if showitem %}
+			<td class="row-{{loop.index % 2}}">
+				<a href="/hardware/view/{{ reservation.item.integer_id() }}">{% set inv = item.inventory_number ~ '' %}{{ inv.zfill(4) }}</a>
+			</td>
+			<td class="row-{{loop.index % 2}}">
+				<a href="/hardware/view/{{ reservation.item.integer_id() }}">{{ item.title }}</a>
+			</td>
+			{% endif %}
+			<td class="row-{{loop.index % 2}}">
+				{% if admin %}<a href="/users/view/{{ user.key.integer_id() }}">{% endif %}{{ user.firstname }} {{ user.lastname }}{% if admin %}</a>{% endif %}
+				{% if admin %}
+				<a href="mailto:{{reservation.user.get().nickname}}%40hyperwerk.ch?subject=Reservation%20von%20{{item.title}}&body=Ahoi%20{{reservation.user.get().firstname}}%20{{reservation.user.get().lastname}}%0D%0A%0D%0AFolgende%20Ware%20ist%20laut%20Datenbank%20auf%20deinen%20Namen%20ausgeliehen%2C%20%C3%BCberf%C3%A4llig%20und%20sollte%20zur%C3%BCck%20ins%20Lager%20oder%20gegebenenfalls%20verl%C3%A4ngert%20werden%3A%0D%0A%0D%0AItemname%3A%20{{item.title}}%0D%0AInvNr%3A%20{{item.inventory_number}}%0D%0Avon%3A%20{{reservation.between.strftime('%d.%m.%Y')}}%20bis%20{{reservation.until.strftime('%d.%m.%Y')}}%0D%0A%0D%0AMit%20freundlichen%20Gr%C3%BCssen%0D%0ADas%20Verleihsystem"><i class="icon-envelope"></i></a>
+				{% endif %}
+			</td>
+			<td class="row-{{loop.index % 2}}">
+				<span>{{ reservation.between.strftime('%d.%m.%Y') }} - {{ reservation.until.strftime('%d.%m.%Y') }}</span>
+			</td>
+			<td class="row-{{loop.index % 2}}">
+				<span>{{ reservation.why }}</span>
+			</td>
+			<td class="row-{{loop.index % 2}}">
+				{% if admin %}
+					{% if confirm %}
+					<a class="btn btn-mini btn-info" href="/reservation/setstate/{{ reservation.key.integer_id() }}?state=1">Bestätigen</a>
+					{% endif %}
+					{% if delete %}
+					<a class="btn btn-mini btn-info" href="/reservation/delete/{{ reservation.key.integer_id() }}">Löschen</a>
+					{% endif %}
+					<a class="btn btn-mini btn-info" href="/reservation/edit/{{ reservation.key.integer_id() }}">Editieren</a>
+				{% endif %}
+			</td>
+		</tr>
+		{% endif %}
+	{% endfor %}
+</table>
+{%- endmacro %}

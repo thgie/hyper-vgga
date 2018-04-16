@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block head %}
+	{{ super() }}
+	    <link rel="stylesheet" href="/static/css/vendor/bootstrap/jquery-ui-1.8.16.custom.css">
+{% endblock %}
+
+{% block content %}
+	<a id="toggle_options" href="#"><h3>Search Options <i class="icon-plus-sign"></i></h3></a>
+	<div id="search_options">
+		<form id="reservation" method="post" action="/reservation/search/">
+			<label for="between">Zeitraum</label>
+			<input class="check datepicker" type="text" name="between" placeholder="Ab" value="{% if between %}{{ between }}{% endif %}"/>
+			<input class="check datepicker" type="text" name="until" placeholder="Bis und mit" value="{% if until %}{{ until }}{% endif %}"/>
+			<label>Benutzer</label>
+			<select name="user">
+				<option value="">-</option>
+				{% for user in users|sort(attribute='nickname') %}
+				{% set id = user.key.integer_id() %}
+				<option value="{{ id }}">{{ user.firstname }} {{ user.lastname }}</option>
+				{% endfor %}
+			</select>
+			<label for="why">Begründung</label>
+			<textarea name="why" rows="3"></textarea>
+			<label class="checkbox">
+				<input name="active" type="checkbox" {% if active %}checked{% endif %}/> Nur aktive Reservationen
+			</label>
+			<input class="btn" type="submit" value="Suchen">
+		</form>
+	</div>
+
+	{% if found %}
+	<h3>{{ found|length }} Resultat{% if found|length > 1 %}e{% endif %}</h3>
+	{{ r( found, false, session.admin ) }}
+	{% endif %}
+{% endblock %}
+
+{% block javascript %}
+	<script src="/static/js/vendor/jquery-1.7.2.min.js"></script>
+	<script src="/static/js/vendor/jquery-ui-1.8.22.custom.min.js"></script>
+	<script src="/static/js/vendor/jquery.ui.datepicker-de.js"></script>
+
+	<script type="text/javascript">
+		
+		$(document).ready(function(){
+			$( ".datepicker" ).datepicker({ firstDay: 1 }, $.datepicker.regional[ "de" ]);
+		});
+		if({{ hide_options }}){
+			$('#search_options').hide(500);
+		}
+		$('#toggle_options').click(function(e){
+			e.preventDefault();
+			$('#search_options').toggle();
+		});
+
+	</script>
+{% endblock %}

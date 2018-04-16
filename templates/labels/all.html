@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h3>Neues Label hinzufügen</h3>
+	<form class="form-inline" id="item_form" action="/labels/create/" method="post">
+		<input type="text" id="label" name="tag" placeholder="Label" required>
+		<select name="category" required>
+			<option value="">Label-Typ</option>
+			<option value="Kategorie">Kategorie</option>
+			<option value="Standort">Standort</option>
+			<option value="Stichwort">Stichwort</option>
+		</select>
+		<input class="btn" type="submit" value="Speichern">
+	</form>
+
+	<h3>Vorhandene Labels</h3>
+	<div class="row-fluid">
+	{% for label in labels %}
+		<div class="span3">
+			<h4>{{ label.category }}</h4>
+			{% for tag in label.tags|sort %}
+			<a class="btn btn-mini btn-info" href="/labels/view/{{ tag }}" style="margin-bottom: 5px;">{{ tag }}</a>
+			{% endfor %}
+		</div>
+	{% endfor %}
+	</div>
+
+{% endblock %}

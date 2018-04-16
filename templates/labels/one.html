@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h3>&ldquo;{{ tag }}&rdquo; editieren</h3>
+	<form class="form-inline" id="item_form" action="/labels/edit/{{ tag }}" method="post">
+		<input type="text" id="label" name="tag" placeholder="Label" value="{{ tag }}">
+		<select name="category" required>
+			<option value="">Label-Typ</option>
+			<option value="Kategorie" {% if label.category == 'Kategorie' %}selected{% endif %}>Kategorie</option>
+			<option value="Standort" {% if label.category == 'Standort' %}selected{% endif %}>Standort</option>
+			<option value="Stichwort" {% if label.category == 'Stichwort' %}selected{% endif %}>Stichwort</option>
+		</select>
+		<input class="btn" type="submit" value="Speichern">
+		<a class="btn btn-danger" href="/labels/delete/{{ tag }}">Löschen</a>
+	</form>
+{% endblock %}

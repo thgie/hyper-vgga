@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h2>Hardware</h2>
+	<table>
+		{% for hw in hws %}
+			{% if not session.admin %}
+				{% if hw.visible %}
+				<tr>
+					<td><a href="/hardware/v/{{ hw.key().id() }}">{{ hw.title }}</a></td>
+				</tr>
+				{% endif %}
+			{% else %}
+				<li><a href="/hardware/v/{{ hw.key().id() }}">{{ hw.title }}</a></li>
+			{% endif %}
+		{% endfor %}
+	</table>
+{% endblock %}

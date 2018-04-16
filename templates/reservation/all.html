@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<h2>All reservations</h2>
+	<ul class="tags">
+		{% for reservation in reservations %}
+			{% if not reservation.archive %}
+			<li><a href="/reservation/v/{{ reservation.key().id() }}">{{ reservation.item.title }}</a></li>
+			{% endif %}
+		{% endfor %}
+	</ul>
+{% endblock %}

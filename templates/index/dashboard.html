@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from 'macros/tables.html' import reservations as r %}
+
+{% block content %}
+	<p class="lead">
+		Willkommen zum Hyperwerk Verleihsystem {{ user.firstname }} {{ user.lastname }}.</br>
+	</p>
+	{% if session.admin %}
+		{% if wishes|length > 0 %}
+			<h3>{{ wishes|length }} W{% if wishes|length > 1 %}ü{% else %}u{% endif %}nsch{% if wishes|length > 1 %}e{% endif %}</h3>
+			{{ r( wishes, true, session.admin ) }}
+		{% endif %}
+		{% if overdone|length > 0 %}
+			<h3 class="text-error">{{ overdone|length }} Überzogen{% if overdone|length > 1 %}e{% endif %}</h3>
+			{{ r( overdone, false, session.admin ) }}
+		{% endif %}
+	{% else %}
+		{% if reservations %}
+			<h3>{{ reservations|length }} Reservation{% if reservations|length > 1 %}en{% endif %}</h3>
+			{{ r( reservations ) }}
+		{% endif %}
+		{% if overdone %}
+			<h3 class="text-error">{{ overdone|length }} Überzogen{% if overdone|length > 1 %}e{% endif %}</h3>
+			{{ r( overdone, false, session.admin ) }}
+		{% endif %}
+	{% endif %}
+{% endblock %}
